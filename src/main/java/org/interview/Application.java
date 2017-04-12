@@ -1,8 +1,6 @@
 package org.interview;
 
-import org.interview.twitter.oauth.TwitterAuthenticator;
-import org.interview.process.MainProcess;
-import org.springframework.beans.factory.annotation.Value;
+import org.interview.process.main.MainProcess;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.*;
 

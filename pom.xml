@@ -10,6 +10,7 @@
 		<commons.version>1.3.2</commons.version>
 		<junit.version>4.12</junit.version>
 		<powermock.version>1.6.6</powermock.version>
+		<jackson.version>2.8.8</jackson.version>
 	</properties>
 
 	<build>
@@ -64,6 +65,7 @@
 			<version>${commons.version}</version>
 		</dependency>
 
+		<!-- Tests -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -82,6 +84,14 @@
 			<version>${powermock.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- -->
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+
 
 
 	</dependencies>
