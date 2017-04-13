@@ -1,6 +1,6 @@
 package org.interview;
 
-import org.interview.process.main.MainProcess;
+import org.interview.process.MainProcess;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.*;
 

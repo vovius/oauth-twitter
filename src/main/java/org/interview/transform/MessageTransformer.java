@@ -1,10 +1,9 @@
-package org.interview.process.transform;
+package org.interview.transform;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.interview.model.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
@@ -16,7 +15,7 @@ public class MessageTransformer {
 
     private static ObjectMapper objectMapper = new ObjectMapper();
 
-    public static Message convertToMessage(String jsonMessage) {
+    public static Message fromJsonMessage(String jsonMessage) {
         Message message = null;
         try {
             message = objectMapper.readValue(jsonMessage, Message.class);

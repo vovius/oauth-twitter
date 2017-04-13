@@ -1,19 +1,23 @@
-package org.interview.process.main;
+package org.interview.process;
 
 import com.google.api.client.http.HttpRequestFactory;
 import org.interview.model.Message;
-import org.interview.process.transform.MessageTransformer;
+import org.interview.model.User;
+import org.interview.sort.MessageComparator;
+import org.interview.transform.MessageTransformer;
+import org.interview.sort.UserComparator;
 import org.interview.twitter.oauth.TwitterAuthenticationException;
 import org.interview.twitter.oauth.TwitterAuthenticator;
 import org.interview.twitter.request.DataRequester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
+
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toCollection;
 
 /**
  * Created by sony on 4/9/2017.
@@ -44,10 +48,23 @@ public final class MainProcess {
         List<String> jsonMessages = requester.request();
         LOG.info(String.format("%d messages have been read", jsonMessages.size()));
 
-        List<Message> messages = jsonMessages.stream()
-                .map(MessageTransformer::convertToMessage)
-                .collect(Collectors.toList());
+        if (jsonMessages.isEmpty())
+            return;
 
+        Map<User,Set<Message>> messages = getConvertedMessages(jsonMessages);
 
+    }
+
+    private Map<User,Set<Message>> getConvertedMessages(List<String> jsonMessages) {
+        Map<User,Set<Message>> messages = jsonMessages.stream()
+                .map(MessageTransformer::fromJsonMessage)
+                .collect(groupingBy(
+                        Message::getAuthor,
+                        () -> new TreeMap(new UserComparator()),
+                        toCollection(
+                                () -> new TreeSet<>(new MessageComparator())
+                        )
+                ));
+        return messages;
     }
 }
