@@ -4,9 +4,15 @@ import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpStatusCodes;
+import org.interview.collect.MessageCollector;
+import org.interview.model.Message;
+import org.interview.model.User;
+import org.interview.output.ConsolePrinter;
+import org.interview.transform.MessageTransformer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
@@ -16,10 +22,13 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import static java.lang.Thread.sleep;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.times;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 /**
@@ -32,7 +41,11 @@ public class DataRequesterTest {
     private static final int RETRIEVE_PERIOD = 3;
     private static final int MAX_MESSAGES = 10;
     private DataRequester dataRequester;
-    private Logger logger;
+    private Logger loggerDataRequester;
+    private Logger loggerMessageCollector;
+    private MessageCollector messageCollector = new MessageCollector();
+    private MessageTransformer messageTransformer = new MessageTransformer();
+    private ConsolePrinter consolePrinter = new ConsolePrinter();
 
     @Before
     public void init() throws IOException {
@@ -41,8 +54,13 @@ public class DataRequesterTest {
         ReflectionTestUtils.setField(dataRequester, "maxMessages", MAX_MESSAGES);
         dataRequester.setRequestFactory(mockRequestFactory());
 
-        logger = mock(Logger.class);
-        Whitebox.setInternalState(DataRequester.class, "LOG", logger);
+        loggerDataRequester = mock(Logger.class);
+        Whitebox.setInternalState(DataRequester.class, "LOG", loggerDataRequester);
+
+        loggerMessageCollector = mock(Logger.class);
+        Whitebox.setInternalState(MessageCollector.class, "LOG", loggerMessageCollector);
+
+        ReflectionTestUtils.setField(messageCollector, "messageTransformer", messageTransformer);
     }
 
     private HttpRequestFactory mockRequestFactory() throws IOException {
@@ -66,9 +84,15 @@ public class DataRequesterTest {
 
     @Test
     public void testRequestGetMessages() throws IOException {
-        List<String> result = dataRequester.request();
-        assertEquals(MAX_MESSAGES, result.size());
+        List<String> jsonMessages = dataRequester.request();
+        assertEquals(MAX_MESSAGES, jsonMessages.size());
+        Mockito.verify(loggerDataRequester, times(1)).info(anyString());
 
+        Map<User,Set<Message>> messages = messageCollector.collect(jsonMessages);
+        assertEquals(MAX_MESSAGES, messages.size());
+        Mockito.verify(loggerMessageCollector, times(1)).info(anyString());
+
+        consolePrinter.print(messages);
 
     }
 

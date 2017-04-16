@@ -1,8 +1,10 @@
 package org.interview.process;
 
 import com.google.api.client.http.HttpRequestFactory;
+import org.interview.collect.MessageCollector;
 import org.interview.model.Message;
 import org.interview.model.User;
+import org.interview.output.ConsolePrinter;
 import org.interview.sort.MessageComparator;
 import org.interview.transform.MessageTransformer;
 import org.interview.sort.UserComparator;
@@ -32,6 +34,12 @@ public final class MainProcess {
     @Autowired
     private DataRequester requester;
 
+    @Autowired
+    private MessageCollector messageCollector;
+
+    @Autowired
+    private ConsolePrinter consolePrinter;
+
     public void run() {
         LOG.info("Authorizing through OAuth...");
 
@@ -46,25 +54,13 @@ public final class MainProcess {
 
         requester.setRequestFactory(httpRequestFactory);
         List<String> jsonMessages = requester.request();
-        LOG.info(String.format("%d messages have been read", jsonMessages.size()));
 
         if (jsonMessages.isEmpty())
             return;
 
-        Map<User,Set<Message>> messages = getConvertedMessages(jsonMessages);
-
+        Map<User,Set<Message>> messages = messageCollector.collect(jsonMessages);
+        if (messages != null)
+            consolePrinter.print(messages);
     }
 
-    private Map<User,Set<Message>> getConvertedMessages(List<String> jsonMessages) {
-        Map<User,Set<Message>> messages = jsonMessages.stream()
-                .map(MessageTransformer::fromJsonMessage)
-                .collect(groupingBy(
-                        Message::getAuthor,
-                        () -> new TreeMap(new UserComparator()),
-                        toCollection(
-                                () -> new TreeSet<>(new MessageComparator())
-                        )
-                ));
-        return messages;
-    }
 }

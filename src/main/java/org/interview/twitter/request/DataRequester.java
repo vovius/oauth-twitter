@@ -84,6 +84,7 @@ public class DataRequester {
                     LOG.info("Expired by timeout, messages read: " + resultMessages.size());
                 }
 
+                LOG.info(String.format("%d messages have been read", resultMessages.size()));
                 return resultMessages;
 
             } else {

@@ -1,5 +1,6 @@
 package org.interview.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.math.BigInteger;
@@ -8,6 +9,7 @@ import java.util.Date;
 /**
  * Created by sony on 4/13/2017.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
 
     @JsonProperty
@@ -19,7 +21,7 @@ public class User {
     @JsonProperty
     private String name;
 
-    @JsonProperty
+    @JsonProperty("screen_name")
     private String screenName;
 
     public BigInteger getId() {
@@ -54,5 +56,15 @@ public class User {
     @Override
     public int hashCode() {
         return id.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", created=" + created +
+                ", name='" + name + '\'' +
+                ", screenName='" + screenName + '\'' +
+                '}';
     }
 }
