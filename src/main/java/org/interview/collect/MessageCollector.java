@@ -11,9 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.function.Function;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.*;
 
 /**
  * Created by sony on 4/16/2017.
@@ -29,16 +29,19 @@ public class MessageCollector {
     public Map<User,Set<Message>> collect(List<String> jsonMessages) {
         Map<User,Set<Message>> messages = jsonMessages.stream()
                 .map(message -> messageTransformer.fromJsonMessage(message))
-                .filter(message -> message.getAuthor() != null)
+                .filter(Message::notNull)
                 .collect(groupingBy(
                         Message::getAuthor,
-                        () -> new TreeMap(new UserComparator()),
-                        toCollection(
-                                () -> new TreeSet<>(new MessageComparator())
+                        () -> new TreeMap<>(new UserComparator()),
+                        mapping(Function.identity(),
+                                toCollection(
+                                        () -> new TreeSet<>(new MessageComparator())
+                                )
                         )
                 ));
 
-        LOG.info(String.format("%d messages have been collected", messages.size()));
+        int messagesCnt = messages.values().stream().mapToInt(Set::size).sum();
+        LOG.info(String.format("%d users with %d messages have been collected", messages.keySet().size(), messagesCnt));
 
         return messages;
     }

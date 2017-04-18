@@ -19,6 +19,8 @@ public class MessageComparator implements Comparator<Message> {
             return 0;
 
         int result = o1.getCreationDate().compareTo(o2.getCreationDate());
+        if (result == 0)
+            result = o1.getId().compareTo(o2.getId());
 
         return result;
 

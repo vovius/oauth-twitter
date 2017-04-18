@@ -66,7 +66,11 @@ public class Message {
                 "id=" + id +
                 ", creationDate=" + creationDate +
                 ", text='" + text + '\'' +
-                ", author=" + author +
+                ", author=" + author.getScreenName() +
                 '}';
+    }
+
+    public boolean notNull() {
+        return id != null && creationDate != null && text != null && author != null;
     }
 }

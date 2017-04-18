@@ -5,7 +5,9 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -13,6 +15,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -20,7 +25,6 @@ import java.util.concurrent.*;
 /**
  * Created by Volodymyr_Arseienko on 10.04.2017.
  */
-@Component
 public class DataRequester {
 
     private final static Logger LOG = LoggerFactory.getLogger(DataRequester.class);
@@ -28,15 +32,15 @@ public class DataRequester {
     private final String requestURL;
     private HttpRequestFactory requestFactory;
 
-    @Value("${retrievePeriod}")
     private int retrievePeriod;
-
-    @Value("${maxMessages}")
     private int maxMessages;
 
-    public DataRequester(String requestURL) {
+    public DataRequester(String requestURL, int retrievePeriod, int maxMessages) {
         this.requestURL = requestURL;
+        this.retrievePeriod = retrievePeriod;
+        this.maxMessages = maxMessages;
     }
+
 
     public void setRequestFactory(HttpRequestFactory requestFactory) {
         this.requestFactory = requestFactory;
@@ -45,6 +49,8 @@ public class DataRequester {
     public List<String> request() {
         GenericUrl url = new GenericUrl(requestURL);
         try {
+            LOG.info("Reading messages...");
+
             HttpRequest request = requestFactory.buildPostRequest(url, null);
             final HttpResponse response = request.execute();
 
@@ -53,8 +59,10 @@ public class DataRequester {
 
                 ExecutorService executorService = Executors.newSingleThreadExecutor();
                 final InputStream inputStream = response.getContent();
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                long startTime = System.currentTimeMillis();
                 final Future task = executorService.submit(() -> {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                     int curCnt = 0;
                     while (curCnt < maxMessages) {
                         String line = null;
@@ -62,12 +70,14 @@ public class DataRequester {
                             line = reader.readLine();
                         } catch (IOException e) {
                             LOG.error("Error when reading message, curCnt=" + curCnt);
+                            break;
                         }
 
                         if (line != null) {
                             resultMessages.add(line);
                             curCnt++;
-                        }
+                        } else
+                            break;
 
                         LOG.debug(line);
                     }
@@ -84,7 +94,19 @@ public class DataRequester {
                     LOG.info("Expired by timeout, messages read: " + resultMessages.size());
                 }
 
-                LOG.info(String.format("%d messages have been read", resultMessages.size()));
+                long endTime = System.currentTimeMillis();
+
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    LOG.error("Error when closing reader: ", e);
+                }
+
+                executorService.shutdown();
+
+                String formattedTime = formattedExecutionTime(startTime, endTime);
+
+                LOG.info(String.format("%d messages have been read, time=%s", resultMessages.size(), formattedTime));
                 return resultMessages;
 
             } else {
@@ -98,6 +120,13 @@ public class DataRequester {
 
         return null;
 
+    }
+
+    private String formattedExecutionTime(long startTime, long endTime) {
+        long duration = endTime - startTime;
+        long seconds = duration / 1000;
+        long millis = duration % 1000;
+        return String.format("%d.%3d sec", seconds, millis);
     }
 
 }

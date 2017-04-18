@@ -17,6 +17,8 @@ public class ApplicationConfiguration {
     @Value("${twitter.secret}") private String twitterSecret;
     @Value("${trackURL}") private String trackURL;
     @Value("${trackOn}") private String trackOn;
+    @Value("${retrievePeriod}") private int retrievePeriod;
+    @Value("${maxMessages}") private int maxMessages;
 
     @Bean
     public TwitterAuthenticator twitterAuthenticator() {
@@ -26,7 +28,7 @@ public class ApplicationConfiguration {
     @Bean
     public DataRequester dataRequester() {
         String requestURL = String.format(trackURL, trackOn);
-        return new DataRequester(requestURL);
+        return new DataRequester(requestURL, retrievePeriod, maxMessages);
     }
 
 

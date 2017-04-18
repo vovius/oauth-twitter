@@ -49,9 +49,9 @@ public class DataRequesterTest {
 
     @Before
     public void init() throws IOException {
-        dataRequester = new DataRequester("http://google.com");
-        ReflectionTestUtils.setField(dataRequester, "retrievePeriod", RETRIEVE_PERIOD);
-        ReflectionTestUtils.setField(dataRequester, "maxMessages", MAX_MESSAGES);
+        dataRequester = new DataRequester("http://google.com", RETRIEVE_PERIOD, MAX_MESSAGES);
+//        ReflectionTestUtils.setField(dataRequester, "retrievePeriod", RETRIEVE_PERIOD);
+//        ReflectionTestUtils.setField(dataRequester, "maxMessages", MAX_MESSAGES);
         dataRequester.setRequestFactory(mockRequestFactory());
 
         loggerDataRequester = mock(Logger.class);
@@ -86,7 +86,7 @@ public class DataRequesterTest {
     public void testRequestGetMessages() throws IOException {
         List<String> jsonMessages = dataRequester.request();
         assertEquals(MAX_MESSAGES, jsonMessages.size());
-        Mockito.verify(loggerDataRequester, times(1)).info(anyString());
+        Mockito.verify(loggerDataRequester, times(2)).info(anyString());
 
         Map<User,Set<Message>> messages = messageCollector.collect(jsonMessages);
         assertEquals(MAX_MESSAGES, messages.size());
