@@ -89,10 +89,10 @@ public class DataRequesterTest {
         Mockito.verify(loggerDataRequester, times(2)).info(anyString());
 
         Map<User,Set<Message>> messages = messageCollector.collect(jsonMessages);
-        assertEquals(MAX_MESSAGES, messages.size());
+        assertEquals(jsonMessages.size(), messages.values().stream().mapToInt(Set::size).sum());
         Mockito.verify(loggerMessageCollector, times(1)).info(anyString());
 
-        consolePrinter.print(messages);
+        //consolePrinter.print(messages);
 
     }
 

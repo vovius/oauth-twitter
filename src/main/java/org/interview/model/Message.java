@@ -1,7 +1,6 @@
 package org.interview.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 
 import java.math.BigInteger;
 import java.util.Date;
@@ -9,19 +8,16 @@ import java.util.Date;
 /**
  * Created by Volodymyr_Arseienko on 12.04.2017.
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class Message {
 
-    @JsonProperty
     private BigInteger id;
 
-    @JsonProperty("created_at")
+    @SerializedName("created_at")
     private Date creationDate;
 
-    @JsonProperty
     private String text;
 
-    @JsonProperty(value = "user")
+    @SerializedName("user")
     private User author;
 
 

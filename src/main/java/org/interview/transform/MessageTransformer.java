@@ -1,6 +1,8 @@
 package org.interview.transform;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import org.interview.model.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,20 +18,20 @@ import java.text.SimpleDateFormat;
 public class MessageTransformer {
     private final static Logger LOG = LoggerFactory.getLogger(MessageTransformer.class);
 
-    private static ObjectMapper objectMapper;
+    private Gson gson;
 
     public MessageTransformer() {
-        objectMapper = new ObjectMapper();
         // Mon Apr 10 13:35:34 +0000 2017
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
-        objectMapper.setDateFormat(dateFormat);
+        gson = new GsonBuilder()
+                    .setDateFormat("EEE MMM d HH:mm:ss Z yyyy")
+                    .create();
     }
 
     public Message fromJsonMessage(String jsonMessage) {
         Message message = null;
         try {
-            message = objectMapper.readValue(jsonMessage, Message.class);
-        } catch (IOException e) {
+            message = gson.fromJson(jsonMessage, Message.class);
+        } catch (JsonSyntaxException e) {
             LOG.error("Cannot transform string to Message: " + jsonMessage, e);
         }
 

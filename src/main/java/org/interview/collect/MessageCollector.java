@@ -29,7 +29,7 @@ public class MessageCollector {
     public Map<User,Set<Message>> collect(List<String> jsonMessages) {
         Map<User,Set<Message>> messages = jsonMessages.stream()
                 .map(message -> messageTransformer.fromJsonMessage(message))
-                .filter(Message::notNull)
+                .filter(message -> Objects.nonNull(message) && message.notNull())
                 .collect(groupingBy(
                         Message::getAuthor,
                         () -> new TreeMap<>(new UserComparator()),
